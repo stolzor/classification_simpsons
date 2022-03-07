@@ -1,0 +1,4 @@
+Hi!
+You can download the train file from here: https://www.kaggle.com/c/journey-springfield/data
+The data path should look like this: data/train/
+Good Luck! :)

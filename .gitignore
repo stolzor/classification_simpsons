@@ -1,0 +1,4 @@
+.idea/
+data/train/
+data/dict_path.json
+__pycache__/
