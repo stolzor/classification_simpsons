@@ -1,0 +1,6 @@
+torchvision
+LabelEncoder==1.0.1
+tqdm
+sklearn
+torch
+numpy
