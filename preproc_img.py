@@ -14,17 +14,17 @@ class SimpsonsDataset(Dataset):
         self.files = [self.load_img(img) for img in files]
         self.len_files = len(self.files)
 
-        self.mode = False if mode == 'test' else True
+        self.mode = mode
 
         self.label_encoder = LabelEncoder()
         self.label_encoder.fit(self.labels)
 
-        if self.mode:
+        if self.mode != 'test':
             with open('label_encoder.pkl', 'wb') as lb_file:
                 pickle.dump(self.label_encoder, lb_file)
 
     def __len__(self):
-        return 60000
+        return 60000 if self.mode != 'test' and self.mode != 'val' else len(self.files)
 
     def load_img(self, img):
         image = Image.open(img)
@@ -67,13 +67,15 @@ class SimpsonsDataset(Dataset):
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
-        random_img = item if item < self.len_files else np.random.randint(1, self.len_files)
-
+        if self.mode != 'val' and self.mode != 'test':
+            random_img = item if item < self.len_files else np.random.randint(1, self.len_files)
+        else:
+            random_img = item
         img = self.files[random_img]
-        x = self.prepare_sample(self.augmentation(img))
+        x = self.prepare_sample(self.augmentation(img)) if self.mode != 'test' and self.mode != 'val' else self.prepare_sample(img)
         x = transform(x)
         y = self.label_encoder.transform([self.labels[random_img]]).item()
-        if not self.mode:
+        if self.mode == 'test':
             return x
         return x, y
 
