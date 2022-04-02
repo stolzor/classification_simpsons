@@ -5,24 +5,24 @@ import pickle
 from preproc_img import pre_process_img
 from pathlib import Path
 
-def predict_one_sample(model, inputs, DEVICE):
+def predict_one_sample(model, inputs, device):
     with torch.no_grad():
         model.eval()
-        inputs = inputs.to(DEVICE)
+        inputs = inputs.to(device)
         outputs = model(inputs).cpu()
         pred = torch.nn.functional.softmax(outputs, -1).numpy()
     return np.argmax(pred, -1)
 
 
 if __name__ == '__main__':
-    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model.load_state_dict(torch.load("weight_cnn/after_regnet_x_800mf.pt", map_location=DEVICE))
+    model.load_state_dict(torch.load("weight_cnn/after_regnet_x_800mf.pt", map_location=device))
 
     label_encoder = pickle.load(open('label_encoder.pkl', 'rb'))
     path = input()
     if not Path(path).is_file():
         raise FileNotFoundError(path)
-    inputs = pre_process_img(path)
-    res = label_encoder.inverse_transform(predict_one_sample(model, inputs.unsqueeze(0), DEVICE))[0]
+    inputs = pre_process_img(path, 'test')
+    res = label_encoder.inverse_transform(predict_one_sample(model, inputs.unsqueeze(0), device))[0]
     print(' '.join([i.title() for i in res.split('_')]))

@@ -2,18 +2,18 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import numpy as np
-from data_augmentation import all_labels, data_train, data_valid
+from data import data_train, data_valid
 from model import model
 
 
-def fit_epoch(model, criterion, optimizer, data, DEVICE):
+def fit_epoch(model, criterion, optimizer, data, device):
     running_loss = 0
     running_acc = 0
     div = 0
 
     for inputs, label in data:
-        inputs = inputs.to(DEVICE)
-        label = label.to(DEVICE)
+        inputs = inputs.to(device)
+        label = label.to(device)
 
         optimizer.zero_grad()
 
@@ -33,15 +33,15 @@ def fit_epoch(model, criterion, optimizer, data, DEVICE):
     return running_loss, running_acc
 
 
-def eval_epoch(model, criterion, data, DEVICE):
+def eval_epoch(model, criterion, data, device):
     model.eval()
     running_loss = 0
     running_acc = 0
     div = 0
 
     for inputs, label in data:
-        inputs = inputs.to(DEVICE)
-        label = label.to(DEVICE)
+        inputs = inputs.to(device)
+        label = label.to(device)
 
         with torch.no_grad():
             outputs = model(inputs)
@@ -59,7 +59,7 @@ def eval_epoch(model, criterion, data, DEVICE):
     return running_loss, running_acc
 
 
-def train(model, criterion, scheduler, optimizer, train, valid, DEVICE, epoch, batch_size=32):
+def train(model, criterion, scheduler, optimizer, train, valid, device, epoch, batch_size=32):
     data_train = DataLoader(train, batch_size=batch_size, shuffle=True)
     data_valid = DataLoader(valid, batch_size=batch_size, shuffle=False)
 
@@ -70,8 +70,8 @@ def train(model, criterion, scheduler, optimizer, train, valid, DEVICE, epoch, b
          valid loss: {valid_loss: 0.4f} valid acc: {valid_acc: 0.4f}"
     with tqdm(desc="epoch", total=epoch) as epoch_upd:
         for epochs in range(epoch):
-            train_loss, train_acc = fit_epoch(model, criterion, optimizer, data_train, DEVICE)
-            valid_loss, valid_acc = eval_epoch(model, criterion, data_valid, DEVICE)
+            train_loss, train_acc = fit_epoch(model, criterion, optimizer, data_train, device)
+            valid_loss, valid_acc = eval_epoch(model, criterion, data_valid, device)
 
             epoch_upd.update(1)
             tqdm.write(text_info.format(train_loss=train_loss, train_acc=train_acc, valid_loss=valid_loss,
@@ -94,10 +94,10 @@ def pre_launch_setup():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, threshold=0.001,
                                                            patience=5)
 
-    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.to(DEVICE)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
 
-    train(model, loss, scheduler, optimizer, data_train, data_valid, DEVICE, 2)
+    train(model, loss, scheduler, optimizer, data_train, data_valid, device, 2)
 
 
 if __name__ == "__main__":

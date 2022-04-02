@@ -1,4 +1,11 @@
 .idea/
-data/train/
+data/simpsons_dataset/
+data/kaggle_simpson_testset/
+data/annotation.txt
+data/archive.zip
+data/characters_illustration.png
+data/number_pic_char.csv
+data/weights.best.hdf5
 data/dict_path.json
 __pycache__/
+venv/

@@ -1,0 +1,14 @@
+<<<<<<< HEAD
+torchvision==0.12.0
+tqdm==4.63.1
+scikit-learn==1.0.1
+torch==1.11.0
+numpy==1.22.3
+=======
+torchvision
+LabelEncoder==1.0.1
+tqdm
+sklearn
+torch
+numpy
+>>>>>>> 5a6de408530967ecffa635741dbb07be782634fa
