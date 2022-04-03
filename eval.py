@@ -2,7 +2,7 @@ import torch
 from model import model
 import numpy as np
 import pickle
-from preproc_img import pre_process_img
+from data import pre_process_img
 from pathlib import Path
 
 def predict_one_sample(model, inputs, device):

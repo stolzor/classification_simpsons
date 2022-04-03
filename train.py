@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import numpy as np
 from data import data_train, data_valid
 from model import model
 
@@ -87,8 +86,6 @@ def train(model, criterion, scheduler, optimizer, train, valid, device, epoch, b
 
 
 def pre_launch_setup():
-    model.load_state_dict(torch.load("weight_cnn/before_regnet_x_800mf.pt"))
-
     loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), amsgrad=True)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, threshold=0.001,
@@ -101,6 +98,6 @@ def pre_launch_setup():
 
 
 if __name__ == "__main__":
-    print('-' * 7 + 'START TRAIN!' + '-' * 7)
+    print('-' * 7 + 'START TRAIN' + '-' * 7)
     pre_launch_setup()
 

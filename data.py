@@ -1,7 +1,117 @@
 from pathlib import Path
-import numpy as np
-from preproc_img import SimpsonsDataset
 from sklearn.model_selection import train_test_split
+from PIL import Image
+from sklearn.preprocessing import LabelEncoder
+from torch.utils.data import Dataset
+from torchvision import transforms
+import numpy as np
+import pickle
+
+
+# SimpsonsDataset wrapper for data load
+class SimpsonsDataset(Dataset):
+    def __init__(self, files, mode):
+        super().__init__()
+        self.labels = [path.parent.name for path in files]
+        self.files = [self.load_img(img) for img in files]
+        self.len_files = len(self.files)
+
+        self.mode = mode
+
+        self.label_encoder = LabelEncoder()
+        self.label_encoder.fit(self.labels)
+
+        if self.mode == 'train':
+            with open('label_encoder.pkl', 'wb') as lb_file:
+                pickle.dump(self.label_encoder, lb_file)
+
+    def __len__(self):
+        return 60000 if self.mode == 'train' else len(self.files)
+
+    def load_img(self, img):
+        image = Image.open(img)
+        image.load()
+        return image
+
+    def prepare_sample(self, img):
+        image = img.resize((244, 244))
+        return np.array(image)
+
+    def transform_sample(self, img):
+        """
+        param img: image for transform
+        return: transformed image
+        """
+
+        transform = {
+            'Crop': transforms.Compose([
+                transforms.Resize((310, 310)),
+                transforms.CenterCrop((305, 305)),
+                transforms.RandomCrop((270, 270))
+            ]),
+            'Rotate': transforms.Compose([
+                transforms.RandomRotation((-25, 25))
+            ]),
+            'Hflip': transforms.Compose([
+                transforms.RandomHorizontalFlip(p=1)
+            ])
+        }
+        transform_list = list(transform.keys())
+
+        augmenter = transform[transform_list[np.random.randint(3)]]
+
+        aug_img = augmenter(img)
+
+        return aug_img
+
+    def __getitem__(self, item):
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        if self.mode == 'train':
+            random_img = item if item < self.len_files else np.random.randint(1, self.len_files)
+        else:
+            random_img = item
+        img = self.files[random_img]
+        x = self.prepare_sample(self.transform_sample(img)) if self.mode == 'train' else self.prepare_sample(img)
+        x = transform(x)
+        y = self.label_encoder.transform([self.labels[random_img]]).item()
+        if self.mode == 'test':
+            return x
+        return x, y
+
+
+# evaluation functions
+def load_img(img):
+    image = Image.open(img)
+    image.load()
+    return image
+
+
+def prepare_sample(img):
+    image = img.resize((244, 244))
+    return np.array(image).astype(np.unit8)
+
+
+def pre_process_img(img, mode):
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    x = load_img(img) if mode != 'train' else img
+    x = prepare_sample(x) if mode != 'train' else img
+    x = transform(x)
+    return x
+
+
+# convert Tensor to img
+def from_array(inp):
+    inp = inp.numpy().transpose((1, 2, 0))
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    inp = (std * inp + mean) * 255
+    return inp.astype(np.uint8)
 
 
 """
@@ -14,7 +124,8 @@ train_files_path = Path("data/simpsons_dataset/")  # data path
 files = list(train_files_path.rglob('*.jpg'))
 labels = np.unique([path.parent.name for path in files])
 
-train_files_path, valid_files_path = train_test_split(files, train_size=0.8, stratify=[path.parent.name for path in files])
+train_files_path, valid_files_path = train_test_split(files, train_size=0.8,
+                                                      stratify=[path.parent.name for path in files])
 
 data_train = SimpsonsDataset(train_files_path, 'train')
 data_valid = SimpsonsDataset(valid_files_path, 'valid')
