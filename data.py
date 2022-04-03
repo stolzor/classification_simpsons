@@ -13,7 +13,7 @@ class SimpsonsDataset(Dataset):
     def __init__(self, files, mode):
         super().__init__()
         self.labels = [path.parent.name for path in files]
-        self.files = [self.load_img(img) for img in files]
+        self.files = np.array([self.load_img(img) for img in files])
         self.len_files = len(self.files)
 
         self.mode = mode
@@ -30,12 +30,16 @@ class SimpsonsDataset(Dataset):
 
     def load_img(self, img):
         image = Image.open(img)
-        image.load()
-        return image
+        return self.prepare_sample(image)
 
     def prepare_sample(self, img):
-        image = img.resize((244, 244))
-        return np.array(image)
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Resize((244, 244)),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+        image = transform(img)
+        return image.numpy()
 
     def transform_sample(self, img):
         """
@@ -65,17 +69,12 @@ class SimpsonsDataset(Dataset):
         return aug_img
 
     def __getitem__(self, item):
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
         if self.mode == 'train':
             random_img = item if item < self.len_files else np.random.randint(1, self.len_files)
         else:
             random_img = item
         img = self.files[random_img]
-        x = self.prepare_sample(self.transform_sample(img)) if self.mode == 'train' else self.prepare_sample(img)
-        x = transform(x)
+        x = self.transform_sample(img) if self.mode == 'train' else img
         y = self.label_encoder.transform([self.labels[random_img]]).item()
         if self.mode == 'test':
             return x
@@ -91,7 +90,7 @@ def load_img(img):
 
 def prepare_sample(img):
     image = img.resize((244, 244))
-    return np.array(image).astype(np.unit8)
+    return np.array(image)
 
 
 def pre_process_img(img, mode):
@@ -128,4 +127,5 @@ train_files_path, valid_files_path = train_test_split(files, train_size=0.8,
                                                       stratify=[path.parent.name for path in files])
 
 data_train = SimpsonsDataset(train_files_path, 'train')
-data_valid = SimpsonsDataset(valid_files_path, 'valid')
+print(data_train.files.shape)
+# data_valid = SimpsonsDataset(valid_files_path, 'valid')
