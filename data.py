@@ -127,5 +127,4 @@ train_files_path, valid_files_path = train_test_split(files, train_size=0.8,
                                                       stratify=[path.parent.name for path in files])
 
 data_train = SimpsonsDataset(train_files_path, 'train')
-print(data_train.files.shape)
-# data_valid = SimpsonsDataset(valid_files_path, 'valid')
+data_valid = SimpsonsDataset(valid_files_path, 'valid')
