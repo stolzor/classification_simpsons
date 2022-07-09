@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from data import data_train, data_valid
-from model import model
+from preproc_data.data import data_train, data_valid
+from model.model import model
 
 
 def fit_epoch(model, criterion, optimizer, data, device):
@@ -81,7 +81,7 @@ def train(model, criterion, scheduler, optimizer, train, valid, device, epoch, b
                 best_acc = valid_acc
                 best_w = model.state_dict()
 
-        torch.save(best_w, 'weight_cnn/after_regnet_x_800mf.pt')
+        torch.save(best_w, 'model/weight_cnn/after_regnet_x_800mf.pt')
         model.load_state_dict(best_w)
 
 
@@ -92,10 +92,10 @@ def pre_launch_setup():
                                                            patience=5)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.load_state_dict(torch.load("model/weight_cnn/before_regnet_x_800mf.pt", map_location=device))
     model.to(device)
 
     train(model, loss, scheduler, optimizer, data_train, data_valid, device, 2)
-
 
 if __name__ == "__main__":
     print('-' * 7 + 'START TRAIN' + '-' * 7)
