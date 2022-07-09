@@ -18,5 +18,5 @@ data.py -> train.py
 If you want to use the Simpsons classification model, then run the eval script.py and specify the path to your picture. And then the script will give you who is depicted in your picture.
 
 ````
-launcg eval.py -> enter path image
+launch eval.py -> enter path image
 ````
