@@ -111,7 +111,7 @@ def augmentation(img):
 
     return aug_img
 
-if __name__ == '__main__':
+if False:
     num_aug = 1500
     to_add = Counter([path.parent for path in files])
 
@@ -134,11 +134,11 @@ if __name__ == '__main__':
                 add -= 1
             idx = 0 if idx == value else idx + 1
 else:
-    train_files_path = Path("data/simpsons_dataset/")  # data path
+    train_files_path = Path("../data/simpsons_dataset/")  # data path
 
     files = list(train_files_path.rglob('*.jpg'))
     labels = np.unique([path.parent.name for path in files])
-
+    print(files)
     train_files_path, valid_files_path = train_test_split(files, train_size=0.8,
                                                       stratify=[path.parent.name for path in files])
 

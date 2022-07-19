@@ -20,3 +20,18 @@ If you want to use the Simpsons classification model, then run the eval script.p
 ````
 launch eval.py -> enter path image
 ````
+
+<h1>Docker</h1>
+Instead of following all the steps described above, you can install Docker and pull my project from there. After installing Docker, run this command:
+
+````
+docker pull stolzor/classification_simpsons
+````
+
+After pulling my project, you need to run the following command:
+
+````
+docker run -d -p 5000:5000 stolzor/classification_simpsons
+````
+
+Complete! Now you only need to select the file to classify!
